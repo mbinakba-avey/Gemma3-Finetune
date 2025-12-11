@@ -3,6 +3,7 @@
 MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
+export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
 
 # It is strongly recommended to train Gemma3 models with the `eager` attention implementation instead of `flash_attention_2`
 
@@ -10,7 +11,7 @@ deepspeed src/train/train_sft.py \
     --use_liger True \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
-    --data_path /path/to/your/training/data.json \
+    --data_path data/train_set_sft.json \
     --image_folder /path/to/your/image/folder \
     --disable_flash_attn2 True \
     --lora_enable False \
@@ -20,8 +21,8 @@ deepspeed src/train/train_sft.py \
     --bf16 True \
     --output_dir output/test \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 1 \
-    --gradient_accumulation_steps 1 \
+    --per_device_train_batch_size 128 \
+    --gradient_accumulation_steps 8 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \
     --vision_lr 2e-6 \
@@ -32,9 +33,10 @@ deepspeed src/train/train_sft.py \
     --logging_steps 1 \
     --tf32 True \
     --gradient_checkpointing True \
-    --report_to tensorboard \
+    --report_to wandb \
+    --wandb_project "gemma3-sft" \
     --lazy_preprocess True \
     --save_strategy "steps" \
     --save_steps 200 \
     --save_total_limit 10 \
-    --dataloader_num_workers 4
+    --dataloader_num_workers 64
