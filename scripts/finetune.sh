@@ -22,8 +22,8 @@ deepspeed src/train/train_sft.py \
     --bf16 True \
     --output_dir output/test \
     --num_train_epochs 2 \
-    --per_device_train_batch_size 256 \
-    --gradient_accumulation_steps 8 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 1 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \
     --vision_lr 2e-6 \
