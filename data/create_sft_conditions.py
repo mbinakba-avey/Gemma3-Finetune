@@ -3,16 +3,22 @@ import random
 import pandas as pd
 
 df = pd.read_csv('all_icd10cm_codes.csv')
-code2conditions = {row["code"]: row["text"] for _, row in df.iterrows()}
+code2conditions = {row["code"]: row["text"] for _, row in df.iterrows() if len(row["code"]) == 3}
 
-with open("synthetic_medical_notes_gpt5_9k.json", "r") as f:
-    data = json.load(f)
+files = [
+    "/root/Gemma3-Finetune/data/synthetic_medical_notes_265_gpt5.json",
+]
+data = []
+for file in files:
+    with open(file, "r") as f:
+        data.extend(json.load(f))
 
 sft_data = []
 
 for index, item in enumerate(data):
     note = item["generated_note"]
     codes = item["combo"]
+    for code in codes: assert len(code) == 3, f"Code {code} is not a valid ICD-10CM generic code"
     conditions = [code2conditions[code] for code in codes]
     random.shuffle(conditions)
     _id = ("0" * 12)[:12-len(str(index))] + str(index)
@@ -31,6 +37,6 @@ for index, item in enumerate(data):
         "conversations": conversations
     })
 
-with open('synthetic_medical_notes_gpt5_9k_sft.json', 'w') as f:
+with open('train_set_sft_conditions.json', 'w') as f:
     json.dump(sft_data, f, indent=4)
 
