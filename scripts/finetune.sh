@@ -4,7 +4,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
-export WANDB_PROJECT="gemma3-poc-6"
+export WANDB_PROJECT="gemma3-poc-10"
 
 # It is strongly recommended to train Gemma3 models with the `eager` attention implementation instead of `flash_attention_2`
 
@@ -12,7 +12,7 @@ deepspeed src/train/train_sft.py \
     --use_liger True \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
-    --data_path data/train_set_sft_conditions.json \
+    --data_path data/train_set_bool_sft_unique_combos_120_sampled_5_balanced_neg.json \
     --image_folder /path/to/your/image/folder \
     --disable_flash_attn2 True \
     --lora_enable False \
