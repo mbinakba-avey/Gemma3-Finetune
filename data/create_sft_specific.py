@@ -8,7 +8,7 @@ sft_data = []
 for index, row in df.iterrows():
     _id = ("0" * 12)[:12-len(str(index))] + str(index)
     code = row['code']
-    text = row['text']
+    text = row['description']
     conversations = [
         {
             "from": "human",
