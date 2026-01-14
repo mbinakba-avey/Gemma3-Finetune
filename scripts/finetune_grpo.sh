@@ -3,6 +3,9 @@
 MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
+export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
+export WANDB_PROJECT="gemma3-poc-12"
+
 
 deepspeed src/train/train_grpo.py \
     --optim adamw_bnb_8bit \
@@ -15,16 +18,16 @@ deepspeed src/train/train_grpo.py \
     --disable_flash_attn2 True \
     --lora_enable False \
     --freeze_projector False \
-    --freeze_vision_tower False \
+    --freeze_vision_tower True \
     --freeze_llm False \
     --bf16 True \
     --output_dir output/test \
     --num_train_epochs 1 \
-    --num_generations 2 \
-    --per_device_train_batch_size 1 \
+    --num_generations 8 \
+    --per_device_train_batch_size 32 \
     --gradient_accumulation_steps 1 \
-    --learning_rate 1e-5 \
-    --projector_lr 1e-5 \
+    --learning_rate 1e-6 \
+    --projector_lr 1e-6 \
     --vision_lr 2e-6 \
     --weight_decay 0.1 \
     --warmup_ratio 0.03 \
@@ -32,9 +35,9 @@ deepspeed src/train/train_grpo.py \
     --logging_steps 1 \
     --tf32 True \
     --gradient_checkpointing True \
-    --report_to tensorboard \
+    --report_to wandb \
     --lazy_preprocess True \
-    --save_strategy "steps" \
-    --save_steps 200 \
+    --save_strategy "epoch" \
+    --save_steps 1 \
     --save_total_limit 10 \
     --dataloader_num_workers 4
