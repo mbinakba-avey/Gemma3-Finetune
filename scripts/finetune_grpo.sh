@@ -4,7 +4,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
-export WANDB_PROJECT="gemma3-poc-12"
+export WANDB_PROJECT="gemma3-poc-grpo-0"
 
 
 deepspeed src/train/train_grpo.py \
@@ -13,7 +13,7 @@ deepspeed src/train/train_grpo.py \
     --max_prompt_length 512 \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
-    --data_path /path/to/your/training/data.json \
+    --data_path data/train_set_specific_grpo.json \
     --image_folder /path/to/your/image/folder \
     --disable_flash_attn2 True \
     --lora_enable False \
