@@ -1,15 +1,52 @@
 import os
+
+import unsloth
+
 import torch
+import peft
+# add peft to builtins
+import builtins
+builtins.peft = peft
 from peft import LoraConfig
+from unsloth import FastModel
 import ast
 import pathlib
-from transformers import AutoProcessor, BitsAndBytesConfig, HfArgumentParser, Gemma3ForConditionalGeneration
+from transformers import AutoProcessor, BitsAndBytesConfig, HfArgumentParser
 from src.trainer import GemmaGRPOTrainer
 from src.dataset import make_grpo_data_module
 from src.params import DataArguments, ModelArguments, GRPOArguments
 from train.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3, safe_save_model_for_hf_trainer
 from monkey_patch_forward import replace_gemma3_forward
 from src.utils import  load_reward_funcs
+
+# Fix for unsloth distributed operations with NCCL backend
+# Unsloth tries to use CPU device for distributed operations, but NCCL doesn't support CPU
+def patch_unsloth_distributed():
+    """Patch torch.distributed.broadcast_object_list to use CUDA device when NCCL backend is used."""
+    try:
+        # Patch torch.distributed.broadcast_object_list to handle NCCL backend with CPU device
+        if hasattr(torch, 'distributed') and hasattr(torch.distributed, 'broadcast_object_list'):
+            original_broadcast_object_list = torch.distributed.broadcast_object_list
+            
+            def patched_broadcast_object_list(object_list, src=0, group=None, device="cpu"):
+                # If NCCL backend is initialized and device is CPU, use CUDA instead
+                try:
+                    if torch.distributed.is_initialized():
+                        backend = torch.distributed.get_backend()
+                        if backend == 'nccl' and (device == 'cpu' or str(device).startswith('cpu')) and torch.cuda.is_available():
+                            device = f'cuda:{torch.cuda.current_device()}'
+                except Exception:
+                    # If anything fails, continue with original device
+                    pass
+                return original_broadcast_object_list(object_list, src=src, group=group, device=device)
+            
+            torch.distributed.broadcast_object_list = patched_broadcast_object_list
+    except Exception:
+        # If anything fails, skip patching
+        pass
+
+# Apply the patch before importing FastModel
+patch_unsloth_distributed()
 
 local_rank = None
 
@@ -106,18 +143,36 @@ def train():
             )
         ))
 
-    model = Gemma3ForConditionalGeneration.from_pretrained(
+    model, tokenizer = FastModel.from_pretrained(
         model_args.model_id,
+        max_seq_length = 1024,
         torch_dtype=compute_dtype,
         cache_dir=training_args.cache_dir,
         attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "eager", 
-        **bnb_model_from_pretrained_args
+        # **bnb_model_from_pretrained_args
+        full_finetuning = False,
+        load_in_8bit = True,
+        load_in_4bit = False,
     )
+    model = FastModel.get_peft_model(
+        model,
+        finetune_vision_layers     = False, # Turn off for just text!
+        finetune_language_layers   = True,  # Should leave on!
+        finetune_attention_modules = True,  # Attention good for GRPO
+        finetune_mlp_modules       = True,  # SHould leave on always!
+
+        r = 8,           # Larger = higher accuracy, but might overfit
+        lora_alpha = 8,  # Recommended alpha == r at least
+        lora_dropout = 0,
+        bias = "none",
+        random_state = 48,
+    )
+    print("Loadding model complete")
 
     model.config.use_cache = False
     model_to_configure = model
-    configure_llm(model_to_configure, training_args)
-    configure_vision_tower(model_to_configure, training_args, compute_dtype, training_args.device)
+    # configure_llm(model_to_configure, training_args)
+    # configure_vision_tower(model_to_configure, training_args, compute_dtype, training_args.device)
 
     if training_args.bits in [4,8]:
         model.config.torch_dtype = (torch.float32 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))

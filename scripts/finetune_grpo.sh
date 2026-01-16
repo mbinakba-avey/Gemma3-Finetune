@@ -8,10 +8,11 @@ export WANDB_PROJECT="gemma3-poc-grpo-0"
 
 
 deepspeed src/train/train_grpo.py \
+    --bits 16\
     --optim adamw_bnb_8bit \
     --max_completion_length 256 \
     --max_prompt_length 512 \
-    --deepspeed scripts/zero3.json \
+    --deepspeed scripts/zero2.json \
     --model_id $MODEL_NAME \
     --data_path data/train_set_specific_grpo.json \
     --image_folder /path/to/your/image/folder \
@@ -24,8 +25,8 @@ deepspeed src/train/train_grpo.py \
     --output_dir output/test \
     --num_train_epochs 1 \
     --num_generations 8 \
-    --per_device_train_batch_size 32 \
-    --gradient_accumulation_steps 1 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 8 \
     --learning_rate 1e-6 \
     --projector_lr 1e-6 \
     --vision_lr 2e-6 \
