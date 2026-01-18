@@ -13,7 +13,7 @@ deepspeed src/train/train_grpo.py \
     --max_prompt_length 512 \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
-    --data_path /path/to/your/training/data.json \
+    --data_path data/train_set_specific_grpo.json \
     --image_folder /path/to/your/image/folder \
     --disable_flash_attn2 True \
     --lora_enable False \
@@ -22,12 +22,12 @@ deepspeed src/train/train_grpo.py \
     --freeze_llm False \
     --bf16 True \
     --output_dir output/test \
-    --num_train_epochs 1 \
-    --num_generations 8 \
-    --per_device_train_batch_size 32 \
+    --num_train_epochs 5 \
+    --num_generations 4 \
+    --per_device_train_batch_size 256 \
     --gradient_accumulation_steps 1 \
-    --learning_rate 1e-6 \
-    --projector_lr 1e-6 \
+    --learning_rate 1e-5 \
+    --projector_lr 1e-5 \
     --vision_lr 2e-6 \
     --weight_decay 0.1 \
     --warmup_ratio 0.03 \
@@ -40,4 +40,4 @@ deepspeed src/train/train_grpo.py \
     --save_strategy "epoch" \
     --save_steps 1 \
     --save_total_limit 10 \
-    --dataloader_num_workers 4
+    --dataloader_num_workers 64
