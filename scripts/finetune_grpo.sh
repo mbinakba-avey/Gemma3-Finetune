@@ -4,7 +4,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
-export WANDB_PROJECT="gemma3-poc-12"
+export WANDB_PROJECT="gemma3-grpo-poc-2"
 
 
 deepspeed src/train/train_grpo.py \
