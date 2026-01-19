@@ -4,7 +4,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
-export WANDB_PROJECT="gemma3-grpo-poc-2"
+export WANDB_PROJECT="gemma3-grpo-poc-3"
 
 
 deepspeed src/train/train_grpo.py \
@@ -22,9 +22,9 @@ deepspeed src/train/train_grpo.py \
     --freeze_llm False \
     --bf16 True \
     --output_dir output/test \
-    --num_train_epochs 5 \
+    --num_train_epochs 3 \
     --num_generations 4 \
-    --per_device_train_batch_size 256 \
+    --per_device_train_batch_size 192 \
     --gradient_accumulation_steps 1 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \

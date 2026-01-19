@@ -10,13 +10,13 @@ def accuracy_reward(completions, assistant, **kwargs):
     rewards = []
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     for content, sol in zip(contents, solution):
-        reward = 0.0
+        reward = -1.0  # Failure
         # Try symbolic verification first
         try:
             content = content.strip()
             sol = sol.strip()
             if sol in content:
-                reward = 1.0
+                reward = 2.0
         except Exception:
             pass  # Continue to next verification method if this fails
 
