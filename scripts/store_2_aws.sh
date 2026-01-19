@@ -1,10 +1,10 @@
 #!/bin/bash
 
 EPOCH_NUM=1
-CHECKPOINT_NUM=$((EPOCH_NUM * 7))
+CHECKPOINT_NUM=$((EPOCH_NUM * 93))
 MODEL_PATH="/root/Gemma3-Finetune/output/test/checkpoint-$CHECKPOINT_NUM"
 aws s3 cp --recursive --exclude "*.pt" $MODEL_PATH \
-    s3://avey-migration-bucket/tasnim/gemma-poc-10/sampled_5_balanced_neg/epoch-$EPOCH_NUM/checkpoint-$CHECKPOINT_NUM/
+    s3://avey-migration-bucket/tasnim/gemma-grpo-poc-3/reward_p2_n1/epoch-$EPOCH_NUM/checkpoint-$CHECKPOINT_NUM/
 
 if [ $? -eq 0 ]; then
     echo "Checkpoint $CHECKPOINT_NUM stored successfully"
