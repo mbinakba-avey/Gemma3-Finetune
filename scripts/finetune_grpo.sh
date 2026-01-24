@@ -11,7 +11,7 @@ export WANDB_PROJECT="gemma3-grpo-experiment-1-test"
 deepspeed src/train/train_grpo.py \
     --loss_type "grpo" \
     --optim adamw_bnb_8bit \
-    --max_completion_length 256 \
+    --max_completion_length 32768 \
     --max_prompt_length 512 \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
@@ -41,5 +41,8 @@ deepspeed src/train/train_grpo.py \
     --lazy_preprocess True \
     --save_strategy "steps" \
     --save_steps 100 \
-    --save_total_limit 10 \
+    --sync_ref_model True \
+    --ref_model_sync_steps 400 \
+    --temperature 1.0 \
+    --save_total_limit 5 \
     --dataloader_num_workers 16
