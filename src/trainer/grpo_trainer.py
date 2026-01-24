@@ -1316,6 +1316,36 @@ class GemmaGRPOTrainer(Trainer):
 
         else:
             super(GemmaGRPOTrainer, self)._save_checkpoint(model, trial)
+        
+        # Evaluate on ICD-10-CM dataset after checkpoint save
+        try:
+            from src.train.evaluate_icd10cm import evaluate_icd10cm_accuracy
+            csv_path = getattr(self.args, 'icd10cm_eval_csv', 'data/all_icd10cm_codes.csv')
+            # Evaluate on full dataset
+            max_samples = None
+            # Use per-device batch size, will be distributed across all GPUs
+            eval_batch_size = self.args.per_device_eval_batch_size  # Smaller batch size due to num_return_sequences=16
+            
+            results = evaluate_icd10cm_accuracy(
+                trainer=self,
+                csv_path=csv_path,
+                max_samples=max_samples,
+                batch_size=eval_batch_size,
+                num_return_sequences=16,
+            )
+            
+            # Log both accuracy@1 and pass@16
+            if self.accelerator.is_main_process:
+                logs = {
+                    "eval/icd10cm_accuracy@1": results["accuracy"],
+                    "eval/icd10cm_pass@16": results["pass_at_k"],
+                }
+                if is_wandb_available() and wandb.run is not None:
+                    wandb.log(logs)
+                self.log(logs)
+        except Exception as e:
+            if self.accelerator.is_main_process:
+                logger.warning(f"Failed to evaluate ICD-10-CM accuracy: {e}")
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
             # If we are executing this function, we are the process zero, so we don't check for that.
