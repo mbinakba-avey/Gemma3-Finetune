@@ -26,8 +26,8 @@ deepspeed src/train/train_grpo.py \
     --bf16 True \
     --output_dir output/test \
     --num_train_epochs 5 \
-    --num_generations 2 \
-    --per_device_train_batch_size 16 \
+    --num_generations 16 \
+    --per_device_train_batch_size 2 \
     --gradient_accumulation_steps 1 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \
@@ -41,9 +41,12 @@ deepspeed src/train/train_grpo.py \
     --report_to wandb \
     --lazy_preprocess True \
     --save_strategy "steps" \
-    --save_steps 2 \
+    --save_steps 50 \
     --sync_ref_model True \
     --ref_model_sync_steps 400 \
     --temperature 1.0 \
+    --top_p 1.0 \
     --save_total_limit 5 \
     --dataloader_num_workers 16
+
+# If the save steps is 50, real save steps is 500
