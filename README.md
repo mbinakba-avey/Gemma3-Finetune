@@ -471,3 +471,8 @@ This project is based on
 
 - [LLaVA-NeXT](https://github.com/LLaVA-VL/LLaVA-NeXT): An amazing open-source project of LMM.
 - [Gemma3](https://huggingface.co/google/gemma-3-4b-it): Awesome pretrained MLLM by Google.
+
+
+
+## ALERT
+- For b200: flash-attn = { url = "https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.7.12/flash_attn-2.8.3+cu128torch2.10-cp313-cp313-linux_x86_64.whl" }
