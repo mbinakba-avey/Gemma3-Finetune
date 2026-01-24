@@ -61,7 +61,7 @@ from trl.trainer.utils import (
 )
 
 from src.train.train_utils import get_peft_state_non_lora_maybe_zero_3
-from src.constants import MULTIMODAL_KEYWORDS
+from src.constants import MULTIMODAL_KEYWORDS, DEFAULT_END_TOKEN
 from src.dataset.data_utils import process_vision_info
 
 RewardFunc = Union[str, PreTrainedModel, Callable[[list, list], list[float]]]
@@ -370,6 +370,25 @@ class GemmaGRPOTrainer(Trainer):
             pad_token_id = processing_class.tokenizer.pad_token_id
             processing_class.pad_token_id = pad_token_id
             processing_class.eos_token_id = processing_class.tokenizer.eos_token_id
+        
+        # Get end_of_turn token ID for Gemma-3 models (needed for proper stopping)
+        end_of_turn_token_id = None
+        if hasattr(processing_class, 'tokenizer') and hasattr(processing_class.tokenizer, 'convert_tokens_to_ids'):
+            try:
+                end_of_turn_token_id = processing_class.tokenizer.convert_tokens_to_ids(DEFAULT_END_TOKEN)
+                # If token not found, convert_tokens_to_ids returns the unk_token_id, so check if it's valid
+                if end_of_turn_token_id == processing_class.tokenizer.unk_token_id:
+                    # Try to find it in the vocab
+                    if DEFAULT_END_TOKEN in processing_class.tokenizer.get_vocab():
+                        end_of_turn_token_id = processing_class.tokenizer.get_vocab()[DEFAULT_END_TOKEN]
+                    else:
+                        end_of_turn_token_id = None
+            except Exception:
+                end_of_turn_token_id = None
+        
+        # Store processing_class and end_of_turn_token_id as instance variables
+        self.processing_class = processing_class
+        self.end_of_turn_token_id = end_of_turn_token_id
 
         # Reward functions
         if not isinstance(reward_funcs, list):
@@ -577,11 +596,16 @@ class GemmaGRPOTrainer(Trainer):
             # synchronize all processes after vLLM has been fully initialized.
             self.accelerator.wait_for_everyone()
         else:
+            # Collect all stop token IDs (EOS + end_of_turn for Gemma-3)
+            stop_token_ids = [processing_class.eos_token_id]
+            if end_of_turn_token_id is not None and end_of_turn_token_id != processing_class.eos_token_id:
+                stop_token_ids.append(end_of_turn_token_id)
+            
             self.generation_config = GenerationConfig(
                 max_new_tokens=self.max_completion_length,
                 do_sample=True,
                 pad_token_id=processing_class.pad_token_id,
-                eos_token_id=processing_class.eos_token_id,
+                eos_token_id=stop_token_ids if len(stop_token_ids) > 1 else stop_token_ids[0],
                 temperature=self.temperature,
                 top_p=self.top_p,
                 top_k=self.top_k,
@@ -892,8 +916,13 @@ class GemmaGRPOTrainer(Trainer):
             prompt_ids = prompt_completion_ids[:, :prompt_length]
             completion_ids = prompt_completion_ids[:, prompt_length:]
 
-        # Mask everything after the first EOS token
+        # Mask everything after the first stop token (EOS or end_of_turn for Gemma-3)
         is_eos = completion_ids == self.processing_class.eos_token_id
+        # Also check for end_of_turn token if it exists
+        if self.end_of_turn_token_id is not None:
+            is_end_of_turn = completion_ids == self.end_of_turn_token_id
+            is_eos = is_eos | is_end_of_turn
+        
         eos_idx = torch.full((is_eos.size(0),), is_eos.size(1), dtype=torch.long, device=device)
         eos_idx[is_eos.any(dim=1)] = is_eos.int().argmax(dim=1)[is_eos.any(dim=1)]
         sequence_indices = torch.arange(is_eos.size(1), device=device).expand(is_eos.size(0), -1)

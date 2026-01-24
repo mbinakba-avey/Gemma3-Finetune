@@ -16,7 +16,7 @@ def accuracy_reward(completions, assistant, **kwargs):
             content = content.strip()
             sol = sol.strip()
             if sol in content:
-                reward = 2.0
+                reward = 1.0
         except Exception:
             pass  # Continue to next verification method if this fails
 
