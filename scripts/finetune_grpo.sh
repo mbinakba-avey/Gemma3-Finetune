@@ -5,7 +5,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
-export WANDB_PROJECT="gemma3-grpo-experiment-1-test"
+export WANDB_PROJECT="gemma3-grpo-experiment-1-final"
 export REWARD_JSON_OUTPUT_PATH="reward_data/reward_data.json"
 
 
@@ -18,14 +18,14 @@ deepspeed src/train/train_grpo.py \
     --model_id $MODEL_NAME \
     --data_path data/train_set_specific_grpo.json \
     --image_folder /path/to/your/image/folder \
-    --disable_flash_attn2 False \
+    --disable_flash_attn2 True \
     --lora_enable False \
     --freeze_projector False \
     --freeze_vision_tower True \
     --freeze_llm False \
     --bf16 True \
     --output_dir output/test \
-    --num_train_epochs 5 \
+    --num_train_epochs 2 \
     --num_generations 16 \
     --per_device_train_batch_size 2 \
     --gradient_accumulation_steps 1 \
