@@ -6,6 +6,7 @@ MODEL_NAME="google/gemma-3-4b-it"
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
 export WANDB_PROJECT="gemma3-grpo-experiment-1-test"
+export REWARD_JSON_OUTPUT_PATH="reward_data/reward_data.json"
 
 
 deepspeed src/train/train_grpo.py \
@@ -26,7 +27,7 @@ deepspeed src/train/train_grpo.py \
     --output_dir output/test \
     --num_train_epochs 5 \
     --num_generations 2 \
-    --per_device_train_batch_size 32 \
+    --per_device_train_batch_size 16 \
     --gradient_accumulation_steps 1 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \
@@ -40,7 +41,7 @@ deepspeed src/train/train_grpo.py \
     --report_to wandb \
     --lazy_preprocess True \
     --save_strategy "steps" \
-    --save_steps 100 \
+    --save_steps 2 \
     --sync_ref_model True \
     --ref_model_sync_steps 400 \
     --temperature 1.0 \
