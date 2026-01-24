@@ -27,6 +27,9 @@ for index, row in df.iterrows():
         "id": _id,
         "conversations": conversations
     })
+import random
+# shuffle the conversations
+random.shuffle(sft_data)
 
 with open('train_set_specific_grpo.json', 'w') as f:
     json.dump(sft_data, f, indent=4)
