@@ -16,6 +16,7 @@ import safetensors
 import numpy as np
 
 from torch.utils.data import DataLoader, Sampler
+from functools import partial
 
 from accelerate.utils import is_peft_model, set_seed, broadcast_object_list, gather, gather_object
 from transformers.utils import is_peft_available, is_datasets_available
@@ -674,7 +675,14 @@ class GemmaGRPOTrainer(Trainer):
         if not isinstance(train_dataset, torch.utils.data.IterableDataset):
             dataloader_params["sampler"] = self._get_train_sampler()
             dataloader_params["drop_last"] = self.args.dataloader_drop_last
-            dataloader_params["worker_init_fn"] = seed_worker
+            # In newer `transformers` (e.g. 4.57+), `seed_worker` expects
+            # (worker_id, num_workers, rank). PyTorch DataLoader will only pass
+            # (worker_id), so we partially apply the extra args.
+            dataloader_params["worker_init_fn"] = partial(
+                seed_worker,
+                num_workers=self.args.dataloader_num_workers,
+                rank=getattr(self.args, "process_index", None) or getattr(self, "process_index", 0),
+            )
             dataloader_params["prefetch_factor"] = self.args.dataloader_prefetch_factor
 
         return self.accelerator.prepare(DataLoader(train_dataset, **dataloader_params))

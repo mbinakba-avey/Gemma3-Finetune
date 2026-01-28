@@ -1,19 +1,21 @@
 #!/bin/bash
 
-MODEL_NAME="google/gemma-3-4b-it"
+# MODEL_NAME="google/gemma-3-4b-it"
 # MODEL_NAME="google/gemma-3-4b-pt"
+MODEL_NAME="./gemma-3-base"
 
 export PYTHONPATH=src:$PYTHONPATH
 export WANDB_API_KEY="7eadd40652b0651b0f12dc86ea4d5fde56db2e2a"
 export WANDB_PROJECT="gemma3-grpo-experiment-1-final"
 export REWARD_JSON_OUTPUT_PATH="reward_data/reward_data.json"
 
-
+export CUDA_VISIBLE_DEVICES=3
 deepspeed src/train/train_grpo.py \
     --loss_type "grpo" \
+    --use_vllm True \
     --optim adamw_bnb_8bit \
-    --max_completion_length 32768 \
-    --max_prompt_length 512 \
+    --max_completion_length 128 \
+    --max_prompt_length 256 \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
     --data_path data/train_set_specific_grpo.json \
@@ -27,7 +29,7 @@ deepspeed src/train/train_grpo.py \
     --output_dir output/test \
     --num_train_epochs 2 \
     --num_generations 16 \
-    --per_device_train_batch_size 2 \
+    --per_device_train_batch_size 32 \
     --gradient_accumulation_steps 1 \
     --learning_rate 1e-5 \
     --projector_lr 1e-5 \
