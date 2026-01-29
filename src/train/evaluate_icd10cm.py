@@ -61,7 +61,7 @@ def evaluate_icd10cm_accuracy(
     csv_path: str = "data/all_icd10cm_codes.csv",
     max_samples: Optional[int] = None,
     batch_size: int = 32,
-    max_new_tokens: int = 128,
+    max_new_tokens: int = 32768,
     num_return_sequences: int = 1,
     temperature: float = 0.0,  # Use deterministic generation for evaluation
 ) -> dict:
