@@ -42,7 +42,7 @@ def accuracy_reward(completions, assistant, **kwargs):
         rewards.append(reward)
         
         # Store data for JSON output
-        if json_output_path:
+        if json_output_path :
             entry = {
                 "timestamp": current_time,
                 "reward": reward,
@@ -60,22 +60,22 @@ def accuracy_reward(completions, assistant, **kwargs):
                 f.write(f"Solution: {sol}\n")
     
     # Write JSON data to independent files (one file per batch)
-    if json_output_path and json_data:
-        # Create directory if it doesn't exist
-        output_dir = os.path.dirname(json_output_path)
-        if output_dir:  # Only create directory if path contains a directory
-            os.makedirs(output_dir, exist_ok=True)
+    # if json_output_path and json_data:
+    #     # Create directory if it doesn't exist
+    #     output_dir = os.path.dirname(json_output_path)
+    #     if output_dir:  # Only create directory if path contains a directory
+    #         os.makedirs(output_dir, exist_ok=True)
         
-        # Create unique filename using timestamp
-        base_path = os.path.splitext(json_output_path)[0]  # Remove extension if present
-        extension = os.path.splitext(json_output_path)[1] or ".json"  # Get extension or default to .json
+    #     # Create unique filename using timestamp
+    #     base_path = os.path.splitext(json_output_path)[0]  # Remove extension if present
+    #     extension = os.path.splitext(json_output_path)[1] or ".json"  # Get extension or default to .json
         
-        # Generate unique filename with timestamp
-        unique_filename = f"{base_path}_{current_time}{extension}"
+    #     # Generate unique filename with timestamp
+    #     unique_filename = f"{base_path}_{current_time}{extension}"
         
-        # Write JSON data to independent file
-        with open(unique_filename, "w") as f:
-            json.dump(json_data, f, indent=2, ensure_ascii=False)
+    #     # Write JSON data to independent file
+    #     with open(unique_filename, "w") as f:
+    #         json.dump(json_data, f, indent=2, ensure_ascii=False)
     
     return rewards
 
