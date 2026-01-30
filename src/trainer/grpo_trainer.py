@@ -1323,7 +1323,7 @@ class GemmaGRPOTrainer(Trainer):
                 self._rotate_checkpoints(use_mtime=False, output_dir=run_dir)
 
         else:
-            if self.state.global_step % (self.args.save_steps * 2) == 0:
+            if self.state.global_step % 100 == 0:
                 super(GemmaGRPOTrainer, self)._save_checkpoint(model, trial)
         
         # Evaluate on ICD-10-CM dataset after checkpoint save
