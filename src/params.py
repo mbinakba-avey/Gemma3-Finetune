@@ -55,6 +55,7 @@ class TrainingArguments(TrainingArguments):
     vision_lr: Optional[float] = None
     projector_lr: Optional[float] = None
     lora_namespan_exclude: str = field(default=None, metadata={"help": "List of namespan to exclude for LoRA"})
+    lora_target_modules: str = field(default=None, metadata={"help": "List of target modules for LoRA"})
     num_lora_modules: int = -1
     use_liger:bool = True
 
@@ -103,6 +104,7 @@ class DPOArguments(DPOConfigTRL):
     vision_lr: Optional[float] = None
     projector_lr: Optional[float] = None
     lora_namespan_exclude: str = field(default=None, metadata={"help": "List of namespan to exclude for LoRA"})
+    lora_target_modules: str = field(default=None, metadata={"help": "List of target modules for LoRA"})
     num_lora_modules: int = -1
     use_liger:bool = True
     beta: float = field(
@@ -154,6 +156,7 @@ class GRPOArguments(GRPOConfigTRL):
     vision_lr: Optional[float] = None
     projector_lr: Optional[float] = None
     lora_namespan_exclude: str = field(default=None, metadata={"help": "List of namespan to exclude for LoRA"})
+    lora_target_modules: str = field(default=None, metadata={"help": "List of target modules for LoRA"})
     num_lora_modules: int = -1
     beta: float = field(
         default=0.04,

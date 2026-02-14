@@ -134,10 +134,17 @@ def train():
 
     if training_args.lora_enable:
         lora_namespan_exclude = training_args.lora_namespan_exclude
+        
+        target_modules = training_args.lora_target_modules
+        if target_modules is not None:
+             target_modules = ast.literal_eval(target_modules)
+        else:
+             target_modules = find_target_linear_names(model, lora_namespan_exclude=lora_namespan_exclude, num_lora_modules=training_args.num_lora_modules)
+
         peft_config = LoraConfig(
             r=training_args.lora_rank,
             lora_alpha=training_args.lora_alpha,
-            target_modules=find_target_linear_names(model, lora_namespan_exclude=lora_namespan_exclude, num_lora_modules=training_args.num_lora_modules),
+            target_modules=target_modules,
             lora_dropout=training_args.lora_dropout,
             bias=training_args.lora_bias,
         )
